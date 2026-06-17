@@ -1,0 +1,51 @@
+{
+  "generatedAt": "2026-06-17T22:36:01.717Z",
+  "actions": [
+    {
+      "id": "action-1",
+      "text": "@sam email customer recap due 2026-07-01",
+      "owner": "sam",
+      "due": "2026-07-01",
+      "channel": "email",
+      "risk": "high",
+      "evidence": {
+        "line": 3,
+        "source": "ACTION: @sam email customer recap due 2026-07-01"
+      },
+      "approvalRequired": true
+    },
+    {
+      "id": "action-2",
+      "text": "Alex update CRM handoff due next friday",
+      "owner": "Alex",
+      "due": "next friday",
+      "channel": "crm",
+      "risk": "low",
+      "evidence": {
+        "line": 4,
+        "source": "TODO: Alex update CRM handoff due next friday"
+      },
+      "approvalRequired": false
+    },
+    {
+      "id": "action-3",
+      "text": "Prepare internal checklist",
+      "owner": null,
+      "due": null,
+      "channel": "project-management",
+      "risk": "low",
+      "evidence": {
+        "line": 5,
+        "source": "ACTION: Prepare internal checklist"
+      },
+      "approvalRequired": true
+    }
+  ],
+  "issues": [
+    {
+      "id": "action-3",
+      "severity": "warning",
+      "message": "Missing owner"
+    }
+  ]
+}
