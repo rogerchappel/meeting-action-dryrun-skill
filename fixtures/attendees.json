@@ -1,0 +1,12 @@
+{
+  "attendees": [
+    {
+      "name": "Alex",
+      "email": "alex@example.invalid"
+    },
+    {
+      "name": "Sam",
+      "email": "sam@example.invalid"
+    }
+  ]
+}
