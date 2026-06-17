@@ -1,0 +1,22 @@
+{
+  "name": "meeting-action-dryrun-skill",
+  "version": "0.1.0",
+  "description": "Turn meeting notes into proposed follow-up actions and dry-run payloads without sending messages.",
+  "type": "module",
+  "bin": {
+    "meeting-action-dryrun": "src/cli.js"
+  },
+  "scripts": {
+    "test": "node --test",
+    "check": "node scripts/check.js",
+    "build": "node scripts/build.js",
+    "smoke": "bash scripts/validate.sh"
+  },
+  "keywords": [
+    "agent-skill",
+    "local-first",
+    "dry-run"
+  ],
+  "author": "Roger Chappel",
+  "license": "MIT"
+}
