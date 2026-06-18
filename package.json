@@ -22,5 +22,14 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/rogerchappel/meeting-action-dryrun-skill.git"
-  }
+  },
+  "files": [
+    "src",
+    "scripts",
+    "fixtures",
+    "docs",
+    "SKILL.md",
+    "README.md",
+    "LICENSE"
+  ]
 }
