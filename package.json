@@ -10,7 +10,9 @@
     "test": "node --test",
     "check": "node scripts/check.js",
     "build": "node scripts/build.js",
-    "smoke": "bash scripts/validate.sh"
+    "smoke": "bash scripts/validate.sh",
+    "package:smoke": "npm pack --dry-run",
+    "release:check": "npm run check && npm run build && npm test && npm run smoke && npm run package:smoke"
   },
   "keywords": [
     "agent-skill",
@@ -18,5 +20,18 @@
     "dry-run"
   ],
   "author": "Roger Chappel",
-  "license": "MIT"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rogerchappel/meeting-action-dryrun-skill.git"
+  },
+  "files": [
+    "src",
+    "scripts",
+    "fixtures",
+    "docs",
+    "SKILL.md",
+    "README.md",
+    "LICENSE"
+  ]
 }
