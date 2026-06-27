@@ -7,8 +7,13 @@ Turn meeting notes into proposed follow-up actions and dry-run payloads without 
 ```bash
 npm install
 npm run smoke
+npm run release:check
 ```
 
 ## Safety
 
 Local files only. No network calls, publishing, or external account writes. Generated outputs are review artifacts and require human approval before downstream action.
+
+## Support
+
+Report public release-readiness issues at https://github.com/rogerchappel/meeting-action-dryrun-skill/issues.
