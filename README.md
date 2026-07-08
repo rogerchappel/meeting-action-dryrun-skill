@@ -12,13 +12,14 @@ or task trackers.
 npm install
 npm test
 npm run smoke
-node src/cli.js fixtures/meeting.md --attendees fixtures/attendees.json --format markdown
+node src/cli.js --notes fixtures/meeting.md --attendees fixtures/attendees.json --out meeting-action-out
 ```
 
-For JSON output that another local tool can inspect:
+The command writes `action-plan.json` and `review-brief.md` into the output
+directory so another local tool can inspect the dry-run payloads.
 
 ```bash
-node src/cli.js fixtures/meeting.md --attendees fixtures/attendees.json --format json
+node src/cli.js --help
 ```
 
 ## What It Produces
