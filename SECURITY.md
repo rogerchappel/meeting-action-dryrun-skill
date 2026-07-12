@@ -2,12 +2,21 @@
 
 ## Supported Versions
 
-This project is pre-1.0. Security fixes are handled on the latest published 0.x line and the default branch.
+The current `0.1.x` release line receives security fixes while the package is
+being prepared for public release.
 
 ## Reporting a Vulnerability
 
-Please report suspected vulnerabilities privately through GitHub Security Advisories or by contacting the maintainer. Do not include secrets, tokens, or private customer data in public issues.
+Please report suspected vulnerabilities through the GitHub issue tracker at
+https://github.com/rogerchappel/meeting-action-dryrun-skill/issues.
+
+Do not include secrets, private meeting transcripts, or customer data in a public
+issue. Share only a minimal reproduction or a redacted fixture that demonstrates
+the problem.
 
 ## Scope
 
-This package is intended for local developer and agent workflow use. Treat generated artifacts as review material unless the README documents an explicit write action.
+This package is local-first and should not send messages, call external APIs, or
+mutate remote systems. Security issues of interest include accidental disclosure
+in generated review artifacts, unsafe file handling, or behavior that bypasses
+the documented dry-run approval boundary.
