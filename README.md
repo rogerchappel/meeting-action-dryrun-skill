@@ -18,6 +18,11 @@ node src/cli.js --notes fixtures/meeting.md --attendees fixtures/attendees.json 
 The command writes `action-plan.json` and `review-brief.md` into the output
 directory so another local tool can inspect the dry-run payloads.
 
+`--notes <file>` is required. `--attendees <file>` and `--strict` are optional.
+The `--out <dir>` option is also optional and defaults to
+`meeting-action-out`. Invalid or incomplete options print usage guidance to
+stderr and exit with status 2.
+
 ```bash
 node src/cli.js --help
 ```
