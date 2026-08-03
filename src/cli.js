@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
+import path from 'node:path';
 import { buildPlan, parseAttendees, writePlan } from './index.js';
 
 const usage = `Usage: meeting-action-dryrun --notes <file> [options]
@@ -66,11 +67,31 @@ if (args.includes('--help')) {
   process.exit(0);
 }
 
+function canonical(file) {
+  let current = path.resolve(file);
+  const suffix = [];
+  while (!fs.existsSync(current)) {
+    suffix.unshift(path.basename(current));
+    const parent = path.dirname(current);
+    if (parent === current) break;
+    current = parent;
+  }
+  return path.join(fs.realpathSync(current), ...suffix);
+}
+
+function assertDistinctInputs(notesFile, attendeesFile, outDir) {
+  const inputs = [notesFile, attendeesFile].filter(Boolean).map(canonical);
+  const outputs = ['action-plan.json', 'review-brief.md'].map((file) => canonical(path.join(outDir, file)));
+  if (inputs.some((input) => outputs.includes(input))) throw new Error('Output path collides with an input file');
+}
+
 const { attendeesFile, notesFile, outDir, strict } = parseArgs(args);
-const plan = buildPlan({
-  notes: fs.readFileSync(notesFile, 'utf8'),
-  attendees: parseAttendees(attendeesFile),
-  strict
-});
-writePlan(plan, outDir);
-console.log(`Wrote ${outDir}/action-plan.json and ${outDir}/review-brief.md`);
+try {
+  assertDistinctInputs(notesFile, attendeesFile, outDir);
+  const plan = buildPlan({notes: fs.readFileSync(notesFile, 'utf8'), attendees: parseAttendees(attendeesFile), strict});
+  writePlan(plan, outDir);
+  console.log(`Wrote ${outDir}/action-plan.json and ${outDir}/review-brief.md`);
+} catch (error) {
+  console.error(`Error: ${error.message}`);
+  process.exit(1);
+}

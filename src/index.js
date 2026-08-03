@@ -1,6 +1,19 @@
 import fs from 'node:fs';
 import path from 'node:path';
-export function parseAttendees(file){return file?(JSON.parse(fs.readFileSync(file,'utf8')).attendees||[]):[];}
+export function parseAttendees(file){
+  if(!file) return [];
+  let document;
+  try{document=JSON.parse(fs.readFileSync(file,'utf8'));}
+  catch(error){
+    if(error instanceof SyntaxError) throw new Error('Invalid attendees file: expected valid JSON');
+    throw new Error('Unable to read attendees file: '+error.message);
+  }
+  if(!document||typeof document!=='object'||Array.isArray(document)||!Array.isArray(document.attendees)) throw new Error('Invalid attendees file: expected an object with an attendees array');
+  for(const [index,attendee] of document.attendees.entries()){
+    if(!attendee||typeof attendee!=='object'||Array.isArray(attendee)||typeof attendee.name!=='string'||!attendee.name.trim()) throw new Error('Invalid attendees file: attendees['+index+'] must be an object with a non-empty name');
+  }
+  return document.attendees.map((attendee)=>({...attendee,name:attendee.name.trim()}));
+}
 function owner(text,people){const m=text.match(/@([a-z0-9._-]+)/i);if(m) return m[1];const hit=people.find((p)=>text.toLowerCase().includes((p.name||'').toLowerCase()));return hit?hit.name:null;}
 function due(text){const m=text.match(/due[: ]+([0-9]{4}-[0-9]{2}-[0-9]{2}|next [a-z]+)/i);return m?m[1]:null;}
 function channel(text){const s=text.toLowerCase();return s.includes('email')?'email':s.includes('crm')?'crm':s.includes('calendar')?'calendar':'project-management';}
