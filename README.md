@@ -23,6 +23,15 @@ The `--out <dir>` option is also optional and defaults to
 `meeting-action-out`. Invalid or incomplete options print usage guidance to
 stderr and exit with status 2.
 
+Attendee JSON uses the shape `{"attendees":[{"name":"Sam"}]}`. The
+`attendees` value must be an array of objects, each with a non-empty string
+`name`. Malformed, unreadable, or incorrectly shaped files produce a concise
+error without partial outputs.
+
+The canonical `--notes` and `--attendees` paths must not match either generated
+file under `--out`. Equivalent paths reached through symlinks or other aliases
+are rejected before any input is modified.
+
 ```bash
 node src/cli.js --help
 ```
