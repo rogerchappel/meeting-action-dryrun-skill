@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "description": "Turn meeting notes into proposed follow-up actions and dry-run payloads without sending messages.",
   "type": "module",
+  "exports": "./src/index.js",
   "bin": {
     "meeting-action-dryrun": "src/cli.js"
   },
