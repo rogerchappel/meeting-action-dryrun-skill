@@ -1,6 +1,18 @@
 # API
 
-The package exposes pure local functions from `src/index.js` for agents that prefer a library call over the CLI.
+The package exposes pure local functions from its supported package root for
+agents that prefer a library call over the CLI:
+
+```js
+import {
+  buildPlan,
+  extractActions,
+  parseAttendees,
+  renderBrief,
+  validatePlan,
+  writePlan
+} from 'meeting-action-dryrun-skill';
+```
 
 - Input readers accept local paths supplied by the caller.
 - Builders return plain JSON-compatible objects.

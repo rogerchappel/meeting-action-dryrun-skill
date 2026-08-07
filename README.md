@@ -18,6 +18,15 @@ node src/cli.js --notes fixtures/meeting.md --attendees fixtures/attendees.json 
 The command writes `action-plan.json` and `review-brief.md` into the output
 directory so another local tool can inspect the dry-run payloads.
 
+After installing the package, library consumers can use the supported root
+import:
+
+```js
+import { buildPlan, extractActions } from 'meeting-action-dryrun-skill';
+```
+
+See [docs/API.md](docs/API.md) for the complete exported API.
+
 `--notes <file>` is required. `--attendees <file>` and `--strict` are optional.
 The `--out <dir>` option is also optional and defaults to
 `meeting-action-out`. Invalid or incomplete options print usage guidance to
