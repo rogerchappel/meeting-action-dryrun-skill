@@ -9,6 +9,8 @@ Options:
   --notes <file>      Meeting notes to process (required)
   --attendees <file>  Attendee data as JSON
   --out <dir>         Output directory (default: meeting-action-out)
+  --generated-at <timestamp>
+                      Explicit ISO-8601 provenance timestamp
   --strict            Treat validation warnings as errors
   --help              Show this help
 
@@ -22,6 +24,7 @@ function usageError(message) {
 function parseArgs(args) {
   const options = {
     attendeesFile: undefined,
+    generatedAt: undefined,
     notesFile: undefined,
     outDir: 'meeting-action-out',
     strict: false
@@ -29,6 +32,7 @@ function parseArgs(args) {
   const valueOptions = new Map([
     ['--notes', 'notesFile'],
     ['--attendees', 'attendeesFile'],
+    ['--generated-at', 'generatedAt'],
     ['--out', 'outDir']
   ]);
   const seen = new Set();
@@ -85,10 +89,10 @@ function assertDistinctInputs(notesFile, attendeesFile, outDir) {
   if (inputs.some((input) => outputs.includes(input))) throw new Error('Output path collides with an input file');
 }
 
-const { attendeesFile, notesFile, outDir, strict } = parseArgs(args);
+const { attendeesFile, generatedAt, notesFile, outDir, strict } = parseArgs(args);
 try {
   assertDistinctInputs(notesFile, attendeesFile, outDir);
-  const plan = buildPlan({notes: fs.readFileSync(notesFile, 'utf8'), attendees: parseAttendees(attendeesFile), strict});
+  const plan = buildPlan({notes: fs.readFileSync(notesFile, 'utf8'), attendees: parseAttendees(attendeesFile), strict, generatedAt});
   writePlan(plan, outDir);
   console.log(`Wrote ${outDir}/action-plan.json and ${outDir}/review-brief.md`);
 } catch (error) {
