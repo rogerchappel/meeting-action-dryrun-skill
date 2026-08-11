@@ -5,3 +5,6 @@ test('extracts owner channel and risk',()=>{const a=extractActions('ACTION: @sam
 test('requires approval for destructive and credential-related actions',()=>{for(const text of ['ACTION: @sam delete the production database','ACTION: @sam rotate leaked credentials']){const a=extractActions(text,[])[0];assert.equal(a.risk,'high');assert.equal(a.approvalRequired,true);}});
 test('keeps clearly benign owned actions approval-free',()=>{const a=extractActions('ACTION: @sam draft the weekly agenda',[])[0];assert.equal(a.risk,'low');assert.equal(a.approvalRequired,false);});
 test('strict mode fails missing owner',()=>{assert.throws(()=>buildPlan({notes:'TODO: Send recap email',strict:true}),/Missing owner/);});
+test('buildPlan is deterministic without wall-clock provenance',()=>{const input={notes:'ACTION: @sam draft the agenda',attendees:[]};assert.deepEqual(buildPlan(input),buildPlan(input));assert.equal(buildPlan(input).generatedAt,null);});
+test('buildPlan preserves an explicit generation timestamp',()=>{const generatedAt='2026-08-11T02:08:00.000Z';assert.equal(buildPlan({notes:'',generatedAt}).generatedAt,generatedAt);});
+test('buildPlan rejects invalid generation timestamps',()=>{assert.throws(()=>buildPlan({notes:'',generatedAt:'today'}),/expected an ISO-8601 timestamp/);});
