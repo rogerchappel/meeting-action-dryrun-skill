@@ -33,6 +33,25 @@ test('CLI writes fixture-backed dry-run artifacts', () => {
   assert.ok(fs.existsSync(path.join(outDir, 'review-brief.md')));
 });
 
+test('CLI writes byte-stable artifacts for identical inputs', () => withTemp((dir) => {
+  const first = path.join(dir, 'first');
+  const second = path.join(dir, 'second');
+  for (const out of [first, second]) {
+    const result = runCli(['--notes', 'fixtures/meeting.md', '--attendees', 'fixtures/attendees.json', '--out', out]);
+    assert.equal(result.status, 0);
+  }
+  for (const artifact of ['action-plan.json', 'review-brief.md']) {
+    assert.deepEqual(fs.readFileSync(path.join(first, artifact)), fs.readFileSync(path.join(second, artifact)));
+  }
+}));
+
+test('CLI records an explicit generation timestamp', () => withTemp((dir) => {
+  const generatedAt = '2026-08-11T02:08:00.000Z';
+  const result = runCli(['--notes', 'fixtures/meeting.md', '--generated-at', generatedAt, '--out', dir]);
+  assert.equal(result.status, 0);
+  assert.equal(JSON.parse(fs.readFileSync(path.join(dir, 'action-plan.json'), 'utf8')).generatedAt, generatedAt);
+}));
+
 test('CLI help exits cleanly with usage text', () => {
   const result = runCli(['--help']);
   assert.equal(result.status, 0);

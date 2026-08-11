@@ -26,6 +26,16 @@ array. Each item must be an object with a non-empty string `name`; other
 properties are preserved and names are trimmed. Invalid JSON, unreadable files,
 missing/non-array `attendees`, and invalid entries throw concise errors.
 
+## Deterministic generation provenance
+
+`buildPlan({ notes, attendees, strict, generatedAt })` does not read the wall
+clock. When `generatedAt` is omitted, the returned plan contains
+`generatedAt: null`, making repeated calls with identical inputs byte-stable
+when written with `writePlan`. Callers that need provenance may provide an
+explicit ISO-8601 timestamp; its value is preserved in the plan, and invalid
+timestamps are rejected. The CLI provides the same contract through
+`--generated-at <timestamp>`.
+
 ## CLI output safety
 
 Before reading inputs or writing outputs, the CLI canonicalizes the notes path,

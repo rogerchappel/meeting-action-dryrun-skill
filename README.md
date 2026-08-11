@@ -32,6 +32,12 @@ The `--out <dir>` option is also optional and defaults to
 `meeting-action-out`. Invalid or incomplete options print usage guidance to
 stderr and exit with status 2.
 
+Generated artifacts are byte-stable for identical notes, attendees, and
+options. `generatedAt` is `null` by default so generation never depends on the
+wall clock. To retain provenance, pass an explicit ISO-8601 timestamp with
+`--generated-at`, for example `--generated-at 2026-08-11T02:08:00.000Z`.
+Repeating the command with that same value produces identical artifacts.
+
 Attendee JSON uses the shape `{"attendees":[{"name":"Sam"}]}`. The
 `attendees` value must be an array of objects, each with a non-empty string
 `name`. Malformed, unreadable, or incorrectly shaped files produce a concise
@@ -70,7 +76,7 @@ npm run release:check
 
 Local files only. No network calls, publishing, or external account writes. Generated outputs are review artifacts and require human approval before downstream action.
 
-The parser is deterministic and conservative. It does not understand private
+The parser and artifact generation are deterministic and conservative. They do not understand private
 calendar state, organization-specific ownership rules, or commitments that are
 not present in the supplied notes.
 
