@@ -14,7 +14,8 @@ export function parseAttendees(file){
   }
   return document.attendees.map((attendee)=>({...attendee,name:attendee.name.trim()}));
 }
-function owner(text,people){const m=text.match(/@([a-z0-9._-]+)/i);if(m) return m[1];const hit=people.find((p)=>text.toLowerCase().includes((p.name||'').toLowerCase()));return hit?hit.name:null;}
+function escapeRegExp(value){return value.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}
+function owner(text,people){const m=text.match(/@([a-z0-9._-]+)/i);if(m) return m[1];const hit=people.find((p)=>new RegExp('(?<![\\p{L}\\p{N}_])'+escapeRegExp(p.name)+'(?![\\p{L}\\p{N}_])','iu').test(text));return hit?hit.name:null;}
 function due(text){const m=text.match(/due[: ]+([0-9]{4}-[0-9]{2}-[0-9]{2}|next [a-z]+)/i);return m?m[1]:null;}
 function channel(text){const s=text.toLowerCase();return s.includes('email')?'email':s.includes('crm')?'crm':s.includes('calendar')?'calendar':'project-management';}
 function risk(text){return /\b(?:contract|invoice|customer|external|deadline|delete|destroy|drop|erase|purge|remove|truncate|wipe|credentials?|passwords?|secrets?|api[ -]?keys?|access[ -]?tokens?|private[ -]?keys?)\b/i.test(text)?'high':(/email|publish|send/i.test(text)?'medium':'low');}
