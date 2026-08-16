@@ -36,6 +36,15 @@ explicit ISO-8601 timestamp; its value is preserved in the plan, and invalid
 timestamps are rejected. The CLI provides the same contract through
 `--generated-at <timestamp>`.
 
+## Owner inference
+
+Actions can name an owner with an explicit `@mention` or by referencing an
+attendee name. Attendee-name matching is case-insensitive and accepts
+punctuation boundaries, but does not match a name embedded within another word.
+For example, attendee `Ann` matches `Ann, review this` but not `planning`.
+Actions without an owner require approval and produce a `Missing owner` issue;
+strict mode rejects the plan.
+
 ## CLI output safety
 
 Before reading inputs or writing outputs, the CLI canonicalizes the notes path,

@@ -88,6 +88,21 @@ test('CLI uses meeting-action-out when --out is omitted', () => {
 
 test('parses and trims attendee names', () => withTemp((dir) => {const file = write(dir, 'attendees.json', JSON.stringify({attendees: [{name: ' Sam ', role: 'owner'}]}));assert.deepEqual(parseAttendees(file), [{name: 'Sam', role: 'owner'}]);}));
 
+test('CLI reports a missing owner instead of matching an attendee substring', () => withTemp((dir) => {
+  const notes = write(dir, 'notes.md', 'ACTION: Finish planning review');
+  const attendees = write(dir, 'attendees.json', JSON.stringify({attendees: [{name: 'Ann'}]}));
+  const out = path.join(dir, 'out');
+  const result = runCli(['--notes', notes, '--attendees', attendees, '--out', out]);
+  assert.equal(result.status, 0);
+  const plan = JSON.parse(fs.readFileSync(path.join(out, 'action-plan.json'), 'utf8'));
+  assert.equal(plan.actions[0].owner, null);
+  assert.equal(plan.actions[0].approvalRequired, true);
+  assert.deepEqual(plan.issues, [{id: 'action-1', severity: 'warning', message: 'Missing owner'}]);
+  const strict = runCli(['--notes', notes, '--attendees', attendees, '--out', out, '--strict']);
+  assert.equal(strict.status, 1);
+  assert.match(strict.stderr, /Missing owner/);
+}));
+
 test('rejects malformed attendee documents without partial output or a stack trace', () => withTemp((dir) => {
   for (const [content, message] of [['{', 'expected valid JSON'], [JSON.stringify([]), 'expected an object'], [JSON.stringify({attendees: 'sam'}), 'expected an object'], [JSON.stringify({attendees: [{name: '  '}]}), 'non-empty name']]) {
     const attendees = write(dir, 'attendees.json', content);const notes = write(dir, 'notes.md', 'ACTION: prepare agenda');const out = path.join(dir, 'out');const result = runCli(['--notes', notes, '--attendees', attendees, '--out', out]);
