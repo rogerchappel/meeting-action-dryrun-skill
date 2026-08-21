@@ -34,9 +34,17 @@ stderr and exit with status 2.
 
 Generated artifacts are byte-stable for identical notes, attendees, and
 options. `generatedAt` is `null` by default so generation never depends on the
-wall clock. To retain provenance, pass an explicit ISO-8601 timestamp with
+wall clock. To retain provenance, pass an ISO-8601 timestamp containing a
+calendar date, time with seconds, and either `Z` or a numeric UTC offset with
 `--generated-at`, for example `--generated-at 2026-08-11T02:08:00.000Z`.
+Year-only, date-only, timezone-free, RFC-date, and calendar-invalid values are
+rejected.
 Repeating the command with that same value produces identical artifacts.
+
+Due hints use `YYYY-MM-DD` or `next <weekday>`. Calendar-invalid dates such as
+`2026-02-29` are treated as missing (`due: null`) so downstream review does not
+receive an impossible commitment. Missing due hints do not currently add a
+validation issue; reviewers should inspect the nullable `due` field.
 
 Attendee JSON uses the shape `{"attendees":[{"name":"Sam"}]}`. The
 `attendees` value must be an array of objects, each with a non-empty string

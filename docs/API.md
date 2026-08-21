@@ -32,9 +32,18 @@ missing/non-array `attendees`, and invalid entries throw concise errors.
 clock. When `generatedAt` is omitted, the returned plan contains
 `generatedAt: null`, making repeated calls with identical inputs byte-stable
 when written with `writePlan`. Callers that need provenance may provide an
-explicit ISO-8601 timestamp; its value is preserved in the plan, and invalid
-timestamps are rejected. The CLI provides the same contract through
-`--generated-at <timestamp>`.
+explicit ISO-8601 timestamp containing a calendar date, time with seconds, and
+either `Z` or a numeric UTC offset. Its value is preserved in the plan.
+Year-only, date-only, timezone-free, RFC-date, and calendar-invalid values are
+rejected. The CLI provides the same contract through `--generated-at
+<timestamp>`.
+
+## Due hints
+
+`extractActions` recognizes `YYYY-MM-DD` and `next <weekday>` due hints.
+Impossible calendar dates are treated as absent and returned as `due: null`.
+The current validator does not create an issue for a missing due hint, so
+callers that require dates should review the nullable field explicitly.
 
 ## Owner inference
 
