@@ -52,6 +52,16 @@ test('CLI records an explicit generation timestamp', () => withTemp((dir) => {
   assert.equal(JSON.parse(fs.readFileSync(path.join(dir, 'action-plan.json'), 'utf8')).generatedAt, generatedAt);
 }));
 
+test('CLI rejects unsupported generation timestamp forms without partial output', () => withTemp((dir) => {
+  for (const generatedAt of ['2026', '2026-08-11', 'Mon, 11 Aug 2026 02:08:00 GMT']) {
+    const out = path.join(dir, generatedAt.replace(/\W/g, '-'));
+    const result = runCli(['--notes', 'fixtures/meeting.md', '--generated-at', generatedAt, '--out', out]);
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /expected an ISO-8601 timestamp/);
+    assert.equal(fs.existsSync(out), false);
+  }
+}));
+
 test('CLI help exits cleanly with usage text', () => {
   const result = runCli(['--help']);
   assert.equal(result.status, 0);

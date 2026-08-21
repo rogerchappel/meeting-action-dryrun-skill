@@ -11,3 +11,6 @@ test('strict mode fails missing owner',()=>{assert.throws(()=>buildPlan({notes:'
 test('buildPlan is deterministic without wall-clock provenance',()=>{const input={notes:'ACTION: @sam draft the agenda',attendees:[]};assert.deepEqual(buildPlan(input),buildPlan(input));assert.equal(buildPlan(input).generatedAt,null);});
 test('buildPlan preserves an explicit generation timestamp',()=>{const generatedAt='2026-08-11T02:08:00.000Z';assert.equal(buildPlan({notes:'',generatedAt}).generatedAt,generatedAt);});
 test('buildPlan rejects invalid generation timestamps',()=>{assert.throws(()=>buildPlan({notes:'',generatedAt:'today'}),/expected an ISO-8601 timestamp/);});
+test('buildPlan rejects timestamp values outside the documented ISO profile',()=>{for(const generatedAt of ['2026','2026-08-11','Mon, 11 Aug 2026 02:08:00 GMT','2026-08-11T02:08:00']) assert.throws(()=>buildPlan({notes:'',generatedAt}),/expected an ISO-8601 timestamp/);});
+test('extractActions ignores calendar-invalid due hints',()=>{for(const value of ['2026-02-29','2026-13-01']) assert.equal(extractActions(`ACTION: @sam prepare agenda due ${value}`)[0].due,null);});
+test('extractActions preserves calendar-valid due hints',()=>{for(const value of ['2024-02-29','2026-12-31']) assert.equal(extractActions(`ACTION: @sam prepare agenda due ${value}`)[0].due,value);});
