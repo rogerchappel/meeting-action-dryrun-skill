@@ -41,10 +41,13 @@ Year-only, date-only, timezone-free, RFC-date, and calendar-invalid values are
 rejected.
 Repeating the command with that same value produces identical artifacts.
 
-Due hints use `YYYY-MM-DD` or `next <weekday>`. Calendar-invalid dates such as
-`2026-02-29` are treated as missing (`due: null`) so downstream review does not
-receive an impossible commitment. Missing due hints do not currently add a
-validation issue; reviewers should inspect the nullable `due` field.
+Due hints use `YYYY-MM-DD` or `next` followed by Monday, Tuesday, Wednesday,
+Thursday, Friday, Saturday, or Sunday. Weekday matching is case-insensitive and
+the matched spelling is preserved in `due`. Calendar-invalid dates such as
+`2026-02-29` and unsupported phrases such as `next banana` are treated as
+missing (`due: null`) so downstream review does not receive an invalid
+commitment. Missing due hints do not currently add a validation issue;
+reviewers should inspect the nullable `due` field.
 
 Attendee JSON uses the shape `{"attendees":[{"name":"Sam"}]}`. The
 `attendees` value must be an array of objects, each with a non-empty string
