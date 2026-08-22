@@ -113,6 +113,15 @@ test('CLI reports a missing owner instead of matching an attendee substring', ()
   assert.match(strict.stderr, /Missing owner/);
 }));
 
+test('CLI artifacts keep weekday due hints and omit unsupported relative tokens', () => withTemp((dir) => {
+  const notes = write(dir, 'notes.md', 'ACTION: @sam prepare agenda due next Friday\nACTION: @sam prepare slides due next banana');
+  const out = path.join(dir, 'out');
+  const result = runCli(['--notes', notes, '--out', out]);
+  assert.equal(result.status, 0);
+  const plan = JSON.parse(fs.readFileSync(path.join(out, 'action-plan.json'), 'utf8'));
+  assert.deepEqual(plan.actions.map(({due}) => due), ['next Friday', null]);
+}));
+
 test('rejects malformed attendee documents without partial output or a stack trace', () => withTemp((dir) => {
   for (const [content, message] of [['{', 'expected valid JSON'], [JSON.stringify([]), 'expected an object'], [JSON.stringify({attendees: 'sam'}), 'expected an object'], [JSON.stringify({attendees: [{name: '  '}]}), 'non-empty name']]) {
     const attendees = write(dir, 'attendees.json', content);const notes = write(dir, 'notes.md', 'ACTION: prepare agenda');const out = path.join(dir, 'out');const result = runCli(['--notes', notes, '--attendees', attendees, '--out', out]);
