@@ -15,7 +15,7 @@ export function parseAttendees(file){
   return document.attendees.map((attendee)=>({...attendee,name:attendee.name.trim()}));
 }
 function escapeRegExp(value){return value.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}
-function owner(text,people){const m=text.match(/@([a-z0-9._-]+)/i);if(m) return m[1];const hit=people.find((p)=>new RegExp('(?<![\\p{L}\\p{N}_])'+escapeRegExp(p.name)+'(?![\\p{L}\\p{N}_])','iu').test(text));return hit?hit.name:null;}
+function owner(text,people){const m=text.match(/(?<![\p{L}\p{N}._%+-])@([a-z0-9._-]+)/iu);if(m) return m[1];const hit=people.find((p)=>new RegExp('(?<![\\p{L}\\p{N}_])'+escapeRegExp(p.name)+'(?![\\p{L}\\p{N}_])','iu').test(text));return hit?hit.name:null;}
 function calendarDate(value){const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(value);if(!m) return false;const date=new Date(Date.UTC(Number(m[1]),Number(m[2])-1,Number(m[3])));return date.getUTCFullYear()===Number(m[1])&&date.getUTCMonth()===Number(m[2])-1&&date.getUTCDate()===Number(m[3]);}
 function due(text){const m=text.match(/due[: ]+([0-9]{4}-[0-9]{2}-[0-9]{2}|next (?:monday|tuesday|wednesday|thursday|friday|saturday|sunday))\b/i);if(!m) return null;return /^\d/.test(m[1])&&!calendarDate(m[1])?null:m[1];}
 function channel(text){const s=text.toLowerCase();return s.includes('email')?'email':s.includes('crm')?'crm':s.includes('calendar')?'calendar':'project-management';}
