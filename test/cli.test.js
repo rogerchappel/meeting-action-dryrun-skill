@@ -113,6 +113,17 @@ test('CLI reports a missing owner instead of matching an attendee substring', ()
   assert.match(strict.stderr, /Missing owner/);
 }));
 
+test('CLI distinguishes email addresses from explicit owner mentions', () => withTemp((dir) => {
+  const notes = write(dir, 'notes.md', 'ACTION: Email sam@example.com the agenda\nACTION: Ask @sam to draft the agenda');
+  const out = path.join(dir, 'out');
+  const result = runCli(['--notes', notes, '--out', out]);
+  assert.equal(result.status, 0);
+  const plan = JSON.parse(fs.readFileSync(path.join(out, 'action-plan.json'), 'utf8'));
+  assert.deepEqual(plan.actions.map(({owner}) => owner), [null, 'sam']);
+  assert.equal(plan.actions[0].approvalRequired, true);
+  assert.deepEqual(plan.issues, [{id: 'action-1', severity: 'warning', message: 'Missing owner'}]);
+}));
+
 test('CLI artifacts keep weekday due hints and omit unsupported relative tokens', () => withTemp((dir) => {
   const notes = write(dir, 'notes.md', 'ACTION: @sam prepare agenda due next Friday\nACTION: @sam prepare slides due next banana');
   const out = path.join(dir, 'out');

@@ -50,7 +50,8 @@ callers that require dates should review the nullable field explicitly.
 ## Owner inference
 
 Actions can name an owner with an explicit `@mention` or by referencing an
-attendee name. Attendee-name matching is case-insensitive and accepts
+attendee name. An `@` embedded in an email address is not treated as a mention.
+Attendee-name matching is case-insensitive and accepts
 punctuation boundaries, but does not match a name embedded within another word.
 For example, attendee `Ann` matches `Ann, review this` but not `planning`.
 Actions without an owner require approval and produce a `Missing owner` issue;

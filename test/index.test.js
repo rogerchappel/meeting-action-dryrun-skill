@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {buildPlan,extractActions} from '../src/index.js';
 test('extracts owner channel and risk',()=>{const a=extractActions('ACTION: @sam email customer recap due 2026-07-01',[])[0];assert.equal(a.owner,'sam');assert.equal(a.channel,'email');assert.equal(a.risk,'high');});
+test('does not infer an owner from an email address',()=>{const plan=buildPlan({notes:'ACTION: Email sam@example.com the agenda'});assert.equal(plan.actions[0].owner,null);assert.equal(plan.actions[0].approvalRequired,true);assert.deepEqual(plan.issues,[{id:'action-1',severity:'warning',message:'Missing owner'}]);});
+test('recognizes explicit owner mentions at text and punctuation boundaries',()=>{for(const text of ['ACTION: @sam draft the agenda','ACTION: Ask (@sam) to draft the agenda']) assert.equal(extractActions(text)[0].owner,'sam');});
 test('requires approval for destructive and credential-related actions',()=>{for(const text of ['ACTION: @sam delete the production database','ACTION: @sam rotate leaked credentials']){const a=extractActions(text,[])[0];assert.equal(a.risk,'high');assert.equal(a.approvalRequired,true);}});
 test('keeps clearly benign owned actions approval-free',()=>{const a=extractActions('ACTION: @sam draft the weekly agenda',[])[0];assert.equal(a.risk,'low');assert.equal(a.approvalRequired,false);});
 test('matches attendee names case-insensitively at punctuation boundaries',()=>{for(const text of ['ACTION: SAM, draft the agenda','ACTION: Follow up with (sam).']){const a=extractActions(text,[{name:'Sam'}])[0];assert.equal(a.owner,'Sam');assert.equal(a.approvalRequired,false);}});
