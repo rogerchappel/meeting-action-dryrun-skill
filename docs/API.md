@@ -41,9 +41,11 @@ rejected. The CLI provides the same contract through `--generated-at
 ## Due hints
 
 `extractActions` recognizes `YYYY-MM-DD` and `next` followed by a full weekday
-name from Monday through Sunday. Weekdays are matched case-insensitively and
-returned with their matched spelling preserved. Impossible calendar dates and
-unsupported relative tokens are treated as absent and returned as `due: null`.
+name from Monday through Sunday after the standalone word `due`, separated by
+a space or colon. Weekdays are matched case-insensitively and returned with
+their matched spelling preserved. Embedded text such as `overdue` and `undue`
+does not create a due hint. Impossible calendar dates and unsupported relative
+tokens are treated as absent and returned as `due: null`.
 The current validator does not create an issue for a missing due hint, so
 callers that require dates should review the nullable field explicitly.
 

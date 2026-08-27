@@ -4,6 +4,8 @@
 
 - Restrict `next <weekday>` due hints to full weekday names and ignore
   unsupported relative tokens.
+- Require due hints to start with the standalone word `due`, preventing words
+  such as `overdue` and `undue` from creating deadlines.
 
 ## 0.1.0
 

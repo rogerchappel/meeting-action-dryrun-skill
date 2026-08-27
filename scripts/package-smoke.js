@@ -53,6 +53,15 @@ try {
     if (!fs.existsSync(path.join(outputDirectory, file))) throw new Error(`installed CLI did not create ${file}`);
   }
 
+  const boundaryNotes = path.join(consumer, 'due-boundary.md');
+  const boundaryOutput = path.join(consumer, 'due-boundary-output');
+  fs.writeFileSync(boundaryNotes, 'ACTION: @sam review overdue: 2026-09-01\nACTION: @sam prepare agenda due: 2026-09-02\n');
+  run(executable, ['--notes', boundaryNotes, '--out', boundaryOutput], { cwd: consumer });
+  const boundaryPlan = JSON.parse(fs.readFileSync(path.join(boundaryOutput, 'action-plan.json'), 'utf8'));
+  if (boundaryPlan.actions[0].due !== null || boundaryPlan.actions[1].due !== '2026-09-02') {
+    throw new Error('installed CLI did not preserve due-hint word boundaries');
+  }
+
   const expectedExports = ['buildPlan', 'extractActions', 'parseAttendees', 'renderBrief', 'validatePlan', 'writePlan'];
   const importCheck = `
     const packageApi = await import('meeting-action-dryrun-skill');
