@@ -62,6 +62,19 @@ try {
     throw new Error('installed CLI did not preserve due-hint word boundaries');
   }
 
+  const grammarNotes = path.join(consumer, 'action-grammar.md');
+  const grammarOutput = path.join(consumer, 'action-grammar-output');
+  fs.writeFileSync(grammarNotes, 'ACTION: @sam. review sender profile\nACTION: @sam-dev send email recap\n');
+  run(executable, ['--notes', grammarNotes, '--out', grammarOutput], { cwd: consumer });
+  const grammarPlan = JSON.parse(fs.readFileSync(path.join(grammarOutput, 'action-plan.json'), 'utf8'));
+  const [benign,delivery] = grammarPlan.actions;
+  if (benign.owner !== 'sam' || benign.channel !== 'project-management' || benign.risk !== 'low') {
+    throw new Error('installed CLI did not preserve mention and keyword boundaries');
+  }
+  if (delivery.owner !== 'sam-dev' || delivery.channel !== 'email' || delivery.risk !== 'medium') {
+    throw new Error('installed CLI did not recognize supported mention punctuation and action keywords');
+  }
+
   const expectedExports = ['buildPlan', 'extractActions', 'parseAttendees', 'renderBrief', 'validatePlan', 'writePlan'];
   const importCheck = `
     const packageApi = await import('meeting-action-dryrun-skill');
