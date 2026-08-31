@@ -4,6 +4,32 @@ import {buildPlan,extractActions} from '../src/index.js';
 test('extracts owner channel and risk',()=>{const a=extractActions('ACTION: @sam email customer recap due 2026-07-01',[])[0];assert.equal(a.owner,'sam');assert.equal(a.channel,'email');assert.equal(a.risk,'high');});
 test('does not infer an owner from an email address',()=>{const plan=buildPlan({notes:'ACTION: Email sam@example.com the agenda'});assert.equal(plan.actions[0].owner,null);assert.equal(plan.actions[0].approvalRequired,true);assert.deepEqual(plan.issues,[{id:'action-1',severity:'warning',message:'Missing owner'}]);});
 test('recognizes explicit owner mentions at text and punctuation boundaries',()=>{for(const text of ['ACTION: @sam draft the agenda','ACTION: Ask (@sam) to draft the agenda']) assert.equal(extractActions(text)[0].owner,'sam');});
+test('normalizes sentence punctuation after explicit mentions',()=>{
+  const [dotted,hyphenated,underscored]=extractActions([
+    'ACTION: @sam. review the sender profile',
+    'ACTION: @sam-dev review the publisher profile',
+    'ACTION: @sam_ops review the emailed profile'
+  ].join('\n'));
+  assert.equal(dotted.owner,'sam');
+  assert.equal(hyphenated.owner,'sam-dev');
+  assert.equal(underscored.owner,'sam_ops');
+});
+test('matches channel and risk keywords as complete tokens',()=>{
+  const [sender,publisher,emailed,send]=extractActions([
+    'ACTION: @sam review sender profile',
+    'ACTION: @sam review publisher profile',
+    'ACTION: @sam review emailed calendarization',
+    'ACTION: @sam send email recap'
+  ].join('\n'));
+  for(const action of [sender,publisher,emailed]){
+    assert.equal(action.channel,'project-management');
+    assert.equal(action.risk,'low');
+    assert.equal(action.approvalRequired,false);
+  }
+  assert.equal(send.channel,'email');
+  assert.equal(send.risk,'medium');
+  assert.equal(send.approvalRequired,true);
+});
 test('requires approval for destructive and credential-related actions',()=>{for(const text of ['ACTION: @sam delete the production database','ACTION: @sam rotate leaked credentials']){const a=extractActions(text,[])[0];assert.equal(a.risk,'high');assert.equal(a.approvalRequired,true);}});
 test('keeps clearly benign owned actions approval-free',()=>{const a=extractActions('ACTION: @sam draft the weekly agenda',[])[0];assert.equal(a.risk,'low');assert.equal(a.approvalRequired,false);});
 test('matches attendee names case-insensitively at punctuation boundaries',()=>{for(const text of ['ACTION: SAM, draft the agenda','ACTION: Follow up with (sam).']){const a=extractActions(text,[{name:'Sam'}])[0];assert.equal(a.owner,'Sam');assert.equal(a.approvalRequired,false);}});
