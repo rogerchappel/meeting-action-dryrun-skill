@@ -52,12 +52,24 @@ callers that require dates should review the nullable field explicitly.
 ## Owner inference
 
 Actions can name an owner with an explicit `@mention` or by referencing an
-attendee name. An `@` embedded in an email address is not treated as a mention.
+attendee name. Mentions accept internal `.`, `_`, and `-` characters (for
+example `@sam.dev`, `@sam_ops`, and `@sam-dev`) but must begin and end with a
+letter or digit. This excludes sentence punctuation from the handle, so
+`@sam.` resolves to `sam`. An `@` embedded in an email address is not treated
+as a mention.
 Attendee-name matching is case-insensitive and accepts
 punctuation boundaries, but does not match a name embedded within another word.
 For example, attendee `Ann` matches `Ann, review this` but not `planning`.
 Actions without an owner require approval and produce a `Missing owner` issue;
 strict mode rejects the plan.
+
+## Channel and risk keywords
+
+Channel and risk classification matches complete tokens or supported phrases,
+not substrings within longer words. For example, `send email` selects the
+`email` channel and medium risk, while `sender` and `emailed` do not match
+`send` or `email`. This same boundary rule applies to the documented high-risk
+terms and credential phrases.
 
 ## CLI output safety
 
