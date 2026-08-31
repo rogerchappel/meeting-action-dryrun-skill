@@ -54,10 +54,18 @@ Attendee JSON uses the shape `{"attendees":[{"name":"Sam"}]}`. The
 `name`. Malformed, unreadable, or incorrectly shaped files produce a concise
 error without partial outputs.
 
-Owners are inferred from explicit mentions such as `@sam` or from attendee
-names found at word boundaries. An `@` inside an email address, such as
-`sam@example.com`, is not an owner mention; without another owner signal the
-action retains its `Missing owner` warning and requires approval.
+Owners are inferred from explicit mentions such as `@sam`, `@sam-dev`,
+`@sam_ops`, or `@sam.dev`, or from attendee names found at word boundaries.
+Mention punctuation is supported between letters or digits; sentence
+punctuation is excluded, so `@sam.` assigns the action to `sam`. An `@` inside
+an email address, such as `sam@example.com`, is not an owner mention; without
+another owner signal the action retains its `Missing owner` warning and
+requires approval.
+
+Channel keywords (`email`, `crm`, and `calendar`) and risk keywords such as
+`send`, `publish`, `customer`, and `deadline` match complete words or phrases.
+Longer words such as `sender`, `publisher`, `emailed`, and `calendarization`
+do not change the default channel or raise an action's risk.
 
 The canonical `--notes` and `--attendees` paths must not match either generated
 file under `--out`. Equivalent paths reached through symlinks or other aliases
