@@ -100,6 +100,10 @@ npm run release:check
 
 Local files only. No network calls, publishing, or external account writes. Generated outputs are review artifacts and require human approval before downstream action.
 
+The two generated files are published as one coherent pair. A failed write
+does not leave a newly created or mismatched artifact behind, and existing
+files are restored if replacement cannot complete.
+
 The parser and artifact generation are deterministic and conservative. They do not understand private
 calendar state, organization-specific ownership rules, or commitments that are
 not present in the supplied notes.

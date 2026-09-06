@@ -19,6 +19,14 @@ import {
 - Renderers produce Markdown review briefs.
 - Writers create only the requested output directory.
 
+`writePlan(plan, outDir)` publishes `action-plan.json` and `review-brief.md` as
+one artifact pair. It renders both files in a temporary directory, validates
+that any existing targets are regular files, and then replaces the pair. If
+validation, staging, or replacement fails, newly installed outputs are removed
+and pre-existing files are restored. Existing regular files are overwritten
+only after both new artifacts have been written successfully; directories and
+other non-file targets are never overwritten.
+
 ## Attendee input
 
 `parseAttendees(file)` reads a JSON object whose `attendees` property is an
