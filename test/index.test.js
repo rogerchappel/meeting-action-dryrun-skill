@@ -1,6 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {buildPlan,extractActions} from '../src/index.js';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import {spawnSync} from 'node:child_process';
+import {buildPlan,extractActions,writePlan} from '../src/index.js';
 test('extracts owner channel and risk',()=>{const a=extractActions('ACTION: @sam email customer recap due 2026-07-01',[])[0];assert.equal(a.owner,'sam');assert.equal(a.channel,'email');assert.equal(a.risk,'high');});
 test('does not infer an owner from an email address',()=>{const plan=buildPlan({notes:'ACTION: Email sam@example.com the agenda'});assert.equal(plan.actions[0].owner,null);assert.equal(plan.actions[0].approvalRequired,true);assert.deepEqual(plan.issues,[{id:'action-1',severity:'warning',message:'Missing owner'}]);});
 test('recognizes explicit owner mentions at text and punctuation boundaries',()=>{for(const text of ['ACTION: @sam draft the agenda','ACTION: Ask (@sam) to draft the agenda']) assert.equal(extractActions(text)[0].owner,'sam');});
@@ -46,3 +50,37 @@ test('extractActions accepts documented weekday due hints case-insensitively',()
 test('extractActions ignores unsupported relative due tokens',()=>{for(const value of ['next banana','next weekday','next someday']) assert.equal(extractActions(`ACTION: @sam prepare agenda due ${value}`)[0].due,null);});
 test('extractActions requires due hints to begin at a word boundary',()=>{for(const text of ['ACTION: @sam review overdue: 2026-09-01','ACTION: @sam review undue 2026-09-01']) assert.equal(extractActions(text)[0].due,null);});
 test('extractActions accepts documented due separators at word boundaries',()=>{for(const [hint,value] of [['due 2026-09-01','2026-09-01'],['due: 2026-09-01','2026-09-01'],['due next Friday','next Friday']]) assert.equal(extractActions(`ACTION: @sam prepare agenda ${hint}`)[0].due,value);});
+
+function temporaryDirectory(){return fs.mkdtempSync(path.join(os.tmpdir(),'meeting-action-dryrun-'));}
+const deterministicPlan={generatedAt:'2026-09-06T00:00:00.000Z',actions:[],issues:[]};
+
+test('writePlan leaves both existing artifacts unchanged when a target is invalid',()=>{
+  const out=temporaryDirectory();
+  fs.writeFileSync(path.join(out,'action-plan.json'),'existing plan\n');
+  fs.mkdirSync(path.join(out,'review-brief.md'));
+  assert.throws(()=>writePlan(deterministicPlan,out),/review-brief\.md.*regular file/);
+  assert.equal(fs.readFileSync(path.join(out,'action-plan.json'),'utf8'),'existing plan\n');
+  assert.deepEqual(fs.readdirSync(out).sort(),['action-plan.json','review-brief.md']);
+});
+
+test('writePlan publishes a deterministic artifact pair',()=>{
+  const out=temporaryDirectory();
+  writePlan(deterministicPlan,out);
+  assert.equal(fs.readFileSync(path.join(out,'action-plan.json'),'utf8'),JSON.stringify(deterministicPlan,null,2)+'\n');
+  assert.equal(fs.readFileSync(path.join(out,'review-brief.md'),'utf8'),'# Meeting Action Review\n\nActions: 0\n\n## Proposed Actions\n\n## Issues\n- none\n');
+  assert.deepEqual(fs.readdirSync(out).sort(),['action-plan.json','review-brief.md']);
+});
+
+test('CLI failure does not leave a newly created first artifact',()=>{
+  const root=temporaryDirectory();
+  const out=path.join(root,'out');
+  const notes=path.join(root,'notes.md');
+  fs.mkdirSync(out);
+  fs.mkdirSync(path.join(out,'review-brief.md'));
+  fs.writeFileSync(notes,'ACTION: @sam send recap\n');
+  const result=spawnSync(process.execPath,['src/cli.js','--notes',notes,'--out',out],{cwd:path.resolve(import.meta.dirname,'..'),encoding:'utf8'});
+  assert.equal(result.status,1);
+  assert.match(result.stderr,/review-brief\.md.*regular file/);
+  assert.equal(fs.existsSync(path.join(out,'action-plan.json')),false);
+  assert.deepEqual(fs.readdirSync(out),['review-brief.md']);
+});
