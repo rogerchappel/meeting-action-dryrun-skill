@@ -29,4 +29,32 @@ export function validatePlan(actions,strict=false){const issues=[];for(const a o
 function generationTimestamp(value){if(value===undefined||value===null) return null;const iso=/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/;if(typeof value!=='string'||!iso.test(value)||!calendarDate(value.slice(0,10))||Number.isNaN(Date.parse(value))) throw new Error('Invalid generatedAt: expected an ISO-8601 timestamp');return value;}
 export function buildPlan({notes,attendees=[],strict=false,generatedAt}){const actions=extractActions(notes,attendees);return {generatedAt:generationTimestamp(generatedAt),actions,issues:validatePlan(actions,strict)};}
 export function renderBrief(plan){const lines=['# Meeting Action Review','','Actions: '+plan.actions.length,'','## Proposed Actions'];for(const a of plan.actions) lines.push('- ['+a.risk+'] '+a.id+': '+a.text+' (owner: '+(a.owner||'needs-review')+', channel: '+a.channel+')');lines.push('','## Issues');if(!plan.issues.length) lines.push('- none');for(const i of plan.issues) lines.push('- '+i.severity+': '+i.id+' '+i.message);return lines.join('\n')+'\n';}
-export function writePlan(plan,outDir){fs.mkdirSync(outDir,{recursive:true});fs.writeFileSync(path.join(outDir,'action-plan.json'),JSON.stringify(plan,null,2)+'\n');fs.writeFileSync(path.join(outDir,'review-brief.md'),renderBrief(plan));}
+export function writePlan(plan,outDir){
+  fs.mkdirSync(outDir,{recursive:true});
+  const artifacts=[
+    {name:'action-plan.json',content:JSON.stringify(plan,null,2)+'\n'},
+    {name:'review-brief.md',content:renderBrief(plan)}
+  ].map((artifact)=>({...artifact,target:path.join(outDir,artifact.name)}));
+  for(const artifact of artifacts){
+    if(fs.existsSync(artifact.target)&&!fs.lstatSync(artifact.target).isFile()) throw new Error(artifact.target+' must be a regular file');
+  }
+  const staging=fs.mkdtempSync(path.join(outDir,'.meeting-action-dryrun-'));
+  try{
+    for(const artifact of artifacts){artifact.staged=path.join(staging,artifact.name);fs.writeFileSync(artifact.staged,artifact.content);}
+    for(const artifact of artifacts){
+      artifact.backup=path.join(staging,artifact.name+'.previous');
+      artifact.hadExisting=fs.existsSync(artifact.target);
+      if(artifact.hadExisting) fs.renameSync(artifact.target,artifact.backup);
+      fs.renameSync(artifact.staged,artifact.target);
+      artifact.installed=true;
+    }
+  }catch(error){
+    for(const artifact of [...artifacts].reverse()){
+      if(artifact.installed&&fs.existsSync(artifact.target)) fs.rmSync(artifact.target,{force:true});
+      if(artifact.hadExisting&&fs.existsSync(artifact.backup)) fs.renameSync(artifact.backup,artifact.target);
+    }
+    throw error;
+  }finally{
+    fs.rmSync(staging,{recursive:true,force:true});
+  }
+}
