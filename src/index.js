@@ -15,7 +15,15 @@ export function parseAttendees(file){
   return document.attendees.map((attendee)=>({...attendee,name:attendee.name.trim()}));
 }
 function escapeRegExp(value){return value.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}
-function owner(text,people){const m=text.match(/(?<![\p{L}\p{N}._%+-])@([a-z0-9](?:[a-z0-9._-]*[a-z0-9])?)/iu);if(m) return m[1];const hit=people.find((p)=>new RegExp('(?<![\\p{L}\\p{N}_])'+escapeRegExp(p.name)+'(?![\\p{L}\\p{N}_])','iu').test(text));return hit?hit.name:null;}
+function owner(text,people){
+  const mention=text.match(/(?<![\p{L}\p{N}._%+-])@([a-z0-9](?:[a-z0-9._-]*[a-z0-9])?)/iu);
+  if(mention) return mention[1];
+  const matches=people.filter((person)=>new RegExp('(?<![\\p{L}\\p{N}_])'+escapeRegExp(person.name)+'(?![\\p{L}\\p{N}_])','iu').test(text));
+  const leading=matches.filter((person)=>new RegExp('^'+escapeRegExp(person.name)+'\\s*:','iu').test(text));
+  if(leading.length===1) return leading[0].name;
+  const names=new Map(matches.map((person)=>[person.name.toLocaleLowerCase(),person.name]));
+  return names.size===1?[...names.values()][0]:null;
+}
 function calendarDate(value){const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(value);if(!m) return false;const date=new Date(Date.UTC(Number(m[1]),Number(m[2])-1,Number(m[3])));return date.getUTCFullYear()===Number(m[1])&&date.getUTCMonth()===Number(m[2])-1&&date.getUTCDate()===Number(m[3]);}
 function due(text){const m=text.match(/\bdue[: ]+([0-9]{4}-[0-9]{2}-[0-9]{2}|next (?:monday|tuesday|wednesday|thursday|friday|saturday|sunday))\b/i);if(!m) return null;return /^\d/.test(m[1])&&!calendarDate(m[1])?null:m[1];}
 function tokenPattern(tokens){return new RegExp('(?<![\\p{L}\\p{N}_])(?:'+tokens.join('|')+')(?![\\p{L}\\p{N}_])','iu');}
