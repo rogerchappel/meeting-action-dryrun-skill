@@ -68,6 +68,9 @@ as a mention.
 Attendee-name matching is case-insensitive and accepts
 punctuation boundaries, but does not match a name embedded within another word.
 For example, attendee `Ann` matches `Ann, review this` but not `planning`.
+An attendee name in the leading `Name:` position is an explicit owner and wins
+over later attendee references. Multiple incidental attendee names are
+ambiguous and leave the owner unset; attendee-array order never breaks ties.
 Actions without an owner require approval and produce a `Missing owner` issue;
 strict mode rejects the plan.
 

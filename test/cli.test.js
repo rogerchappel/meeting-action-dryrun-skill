@@ -113,6 +113,18 @@ test('CLI reports a missing owner instead of matching an attendee substring', ()
   assert.match(strict.stderr, /Missing owner/);
 }));
 
+test('CLI uses leading owner syntax and review-gates ambiguous attendee prose', () => withTemp((dir) => {
+  const attendees = write(dir, 'attendees.json', JSON.stringify({attendees: [{name: 'Lee'}, {name: 'Sam'}]}));
+  const notes = write(dir, 'notes.md', 'ACTION: Sam: ask Lee to prepare the recap\nACTION: Ask Sam and Lee to prepare the recap');
+  const out = path.join(dir, 'out');
+  const result = runCli(['--notes', notes, '--attendees', attendees, '--out', out]);
+  assert.equal(result.status, 0, result.stderr);
+  const plan = JSON.parse(fs.readFileSync(path.join(out, 'action-plan.json'), 'utf8'));
+  assert.deepEqual(plan.actions.map(({owner}) => owner), ['Sam', null]);
+  assert.equal(plan.actions[1].approvalRequired, true);
+  assert.deepEqual(plan.issues, [{id: 'action-2', severity: 'warning', message: 'Missing owner'}]);
+}));
+
 test('CLI distinguishes email addresses from explicit owner mentions', () => withTemp((dir) => {
   const notes = write(dir, 'notes.md', 'ACTION: Email sam@example.com the agenda\nACTION: Ask @sam to draft the agenda');
   const out = path.join(dir, 'out');
