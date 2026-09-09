@@ -56,6 +56,11 @@ error without partial outputs.
 
 Owners are inferred from explicit mentions such as `@sam`, `@sam-dev`,
 `@sam_ops`, or `@sam.dev`, or from attendee names found at word boundaries.
+An attendee name at the start of an action followed by a colon is an explicit
+owner, so `ACTION: Sam: ask Lee to prepare the recap` belongs to Sam regardless
+of attendee-file ordering. If prose mentions multiple attendees without that
+leading-owner form, ownership remains unassigned for review rather than being
+chosen from attendee-file order.
 Mention punctuation is supported between letters or digits; sentence
 punctuation is excluded, so `@sam.` assigns the action to `sam`. An `@` inside
 an email address, such as `sam@example.com`, is not an owner mention; without
