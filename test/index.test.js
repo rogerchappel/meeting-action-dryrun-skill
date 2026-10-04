@@ -65,6 +65,25 @@ test('writePlan leaves both existing artifacts unchanged when a target is invali
   assert.deepEqual(fs.readdirSync(out).sort(),['action-plan.json','review-brief.md']);
 });
 
+test('writePlan rolls back both artifacts when installation is interrupted',()=>{
+  const out=temporaryDirectory();
+  const planPath=path.join(out,'action-plan.json');
+  const briefPath=path.join(out,'review-brief.md');
+  fs.writeFileSync(planPath,'previous plan\\n');
+  fs.writeFileSync(briefPath,'previous brief\\n');
+  const originalRename=fs.renameSync;
+  let interrupted=false;
+  fs.renameSync=function(source,target){
+    if(!interrupted&&target===briefPath){interrupted=true;throw new Error('simulated interruption');}
+    return originalRename.call(this,source,target);
+  };
+  try{assert.throws(()=>writePlan(deterministicPlan,out),/simulated interruption/);}
+  finally{fs.renameSync=originalRename;}
+  assert.equal(fs.readFileSync(planPath,'utf8'),'previous plan\\n');
+  assert.equal(fs.readFileSync(briefPath,'utf8'),'previous brief\\n');
+  assert.deepEqual(fs.readdirSync(out).sort(),['action-plan.json','review-brief.md']);
+});
+
 test('writePlan publishes a deterministic artifact pair',()=>{
   const out=temporaryDirectory();
   writePlan(deterministicPlan,out);
