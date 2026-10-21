@@ -155,3 +155,24 @@ test('rejects malformed attendee documents without partial output or a stack tra
 test('does not overwrite a directly colliding notes input', () => withTemp((dir) => {const notes = write(dir, 'action-plan.json', 'ACTION: preserve me');const result = runCli(['--notes', notes, '--out', dir]);assert.equal(result.status, 1);assert.match(result.stderr, /collides/);assert.equal(fs.readFileSync(notes, 'utf8'), 'ACTION: preserve me');assert.equal(fs.existsSync(path.join(dir, 'review-brief.md')), false);}));
 
 test('does not overwrite an input through a path alias', () => withTemp((dir) => {const real = path.join(dir, 'real');fs.mkdirSync(real);const alias = path.join(dir, 'alias');fs.symlinkSync(real, alias, 'dir');const attendees = write(real, 'review-brief.md', JSON.stringify({attendees: []}));const result = runCli(['--notes', write(dir, 'notes.md', 'ACTION: test alias'), '--attendees', attendees, '--out', alias]);assert.equal(result.status, 1);assert.match(result.stderr, /collides/);assert.equal(fs.readFileSync(attendees, 'utf8'), JSON.stringify({attendees: []}));assert.equal(fs.existsSync(path.join(real, 'action-plan.json')), false);}));
+
+test('package smoke validates the packed package and installed consumer', () => {
+  const smokePath = fileURLToPath(new URL('../scripts/package-smoke.js', import.meta.url));
+  const result = spawnSync(process.execPath, [smokePath], { cwd: repoDir, encoding: 'utf8' });
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /^package smoke passed: meeting-action-dryrun-skill-.*\.tgz/m);
+});
+
+test('package smoke rejects a package missing required files', () => {
+  const smokePath = fileURLToPath(new URL('../scripts/package-smoke.js', import.meta.url));
+  const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'meeting-action-smoke-reject-'));
+  const npmStub = path.join(temp, 'npm');
+  fs.writeFileSync(npmStub, '#!/bin/sh\nprintf \'[{\"filename\":\"fake.tgz\",\"files\":[]} ]\\n\'\n');
+  fs.chmodSync(npmStub, 0o755);
+  const result = spawnSync(process.execPath, [smokePath], {
+    cwd: repoDir, encoding: 'utf8', env: { ...process.env, PATH: `${temp}:${process.env.PATH}` }
+  });
+  fs.rmSync(temp, { recursive: true, force: true });
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /package smoke missing entries/);
+});
