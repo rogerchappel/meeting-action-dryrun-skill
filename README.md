@@ -9,7 +9,7 @@ or task trackers.
 ## Quickstart
 
 ```bash
-npm install
+npm ci
 npm test
 npm run smoke
 node src/cli.js --notes fixtures/meeting.md --attendees fixtures/attendees.json --out meeting-action-out
